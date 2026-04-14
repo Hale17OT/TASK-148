@@ -1,0 +1,9 @@
+.git
+.gradle
+build
+app/build
+outputs
+*.apk
+*.log
+.idea
+*.iml

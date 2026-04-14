@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/brand_primary"
+        android:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.LibOps.Toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="Source" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Identity"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:paddingBottom="8dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/nameLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Source name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/nameInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Entry type"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/entryTypeGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Schedule &amp; execution"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:paddingBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Refresh mode"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/refreshModeGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Retry backoff"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/retryGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Schedule (cron expression)"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/scheduleLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="e.g. 0 */6 * * *">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/scheduleInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:fontFamily="monospace" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/scheduleHint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Five fields: minute hour day-of-month month day-of-week. Leave blank for manual-only."
+                        android:textSize="11sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:paddingTop="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Priority (1 = lowest, 5 = highest)"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="18dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/prioritySlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1"
+                        android:valueTo="5"
+                        android:stepSize="1"
+                        android:value="3" />
+
+                    <TextView
+                        android:id="@+id/priorityValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/enabledSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Enabled (only active + enabled sources can schedule jobs)"
+                        android:paddingTop="8dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Source rules"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:paddingBottom="8dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/filePathLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Local file path (e.g. /sdcard/import/books.csv)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/filePathInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:fontFamily="monospace" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="File format"
+                        android:textAppearance="@style/TextAppearance.LibOps.Caption"
+                        android:textStyle="bold"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="6dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/fileFormatGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/publisherRuleLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="Default publisher (optional)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/publisherRuleInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/categoryOverrideLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="Category override (book / journal / other)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/categoryOverrideInput"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Rules tell the collection pipeline what to read and how to classify records."
+                        android:textSize="11sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:paddingTop="8dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save source"
+                android:layout_marginTop="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/archiveButton"
+                style="@style/Widget.LibOps.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Archive source"
+                android:layout_marginTop="10dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/error"
+                android:textSize="13sp"
+                android:paddingVertical="8dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

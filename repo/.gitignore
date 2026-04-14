@@ -1,0 +1,18 @@
+*.iml
+.gradle/
+.idea/
+build/
+app/build/
+**/build/
+local.properties
+outputs/
+*.apk
+captures/
+.cxx/
+*.log
+.DS_Store
+.claude/
+.gradle/
+# Test result artifacts
+**/test-results/
+**/reports/

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand -->
+    <color name="brand_primary">#0F2540</color>
+    <color name="brand_primary_variant">#1E3A5F</color>
+    <color name="brand_secondary">#C9A227</color>
+    <color name="brand_secondary_variant">#E2BC45</color>
+
+    <!-- Surfaces -->
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#EEF1F6</color>
+    <color name="surface_dim">#DCE1EA</color>
+    <color name="background">#F7F9FC</color>
+
+    <!-- Text -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_surface">#121826</color>
+    <color name="on_surface_muted">#586579</color>
+    <color name="on_surface_faint">#8A96AB</color>
+
+    <!-- Semantic -->
+    <color name="success">#1E7A3D</color>
+    <color name="success_bg">#E4F4E9</color>
+    <color name="warning">#B77900</color>
+    <color name="warning_bg">#FBF1DD</color>
+    <color name="error">#B3261E</color>
+    <color name="error_bg">#FBE9E7</color>
+    <color name="info">#1E5EC9</color>
+    <color name="info_bg">#E3EDFC</color>
+
+    <!-- Legacy aliases (still referenced by older files) -->
+    <color name="primary">@color/brand_primary</color>
+    <color name="primary_dark">#081729</color>
+    <color name="primary_light">@color/brand_primary_variant</color>
+    <color name="accent">@color/brand_secondary</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="divider">#D7DEE9</color>
+</resources>

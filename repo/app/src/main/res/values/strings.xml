@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LibOps</string>
+    <string name="title_login">Sign in</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_biometric">Use biometric</string>
+    <string name="msg_locked_out">Account locked. Try again later.</string>
+    <string name="msg_invalid_credentials">Invalid credentials</string>
+    <string name="nav_collection_runs">Collection Runs</string>
+    <string name="nav_records">Master Records</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_audit">Audit Logs</string>
+    <string name="nav_admin">Admin</string>
+</resources>
