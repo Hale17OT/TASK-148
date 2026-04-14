@@ -16,3 +16,5 @@ captures/
 # Test result artifacts
 **/test-results/
 **/reports/
+# Sample data files
+samples/
