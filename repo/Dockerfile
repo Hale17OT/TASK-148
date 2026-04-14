@@ -89,7 +89,7 @@ FROM builder AS instrumented
 # Install emulator dependencies (KVM not available in most CI — use swiftshader)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpulse0 libgl1 libnss3 libxcomposite1 libxcursor1 libxi6 \
-    libxtst6 libasound2 procps \
+    libxtst6 libasound2t64 procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Install emulator + system image

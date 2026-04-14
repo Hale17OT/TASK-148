@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
     container_name: libops-builder
     volumes:
       - ./outputs:/output
