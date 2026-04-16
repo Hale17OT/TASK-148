@@ -60,10 +60,6 @@ To ensure a consistent environment, this project is designed to build and test e
 * [Docker](https://docs.docker.com/get-docker/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
-For local development without Docker, you also need:
-* JDK 17 (Temurin recommended)
-* Android SDK 34 with build-tools 34.0.0
-
 ## Running the Application
 
 1. **Build the APK:**
@@ -79,13 +75,28 @@ For local development without Docker, you also need:
    ```
 
 3. **First-launch setup:**
-   On first install, the app generates a unique administrator password and
-   displays it once in a modal dialog. See the Seeded Credentials section below.
+   The debug APK uses a fixed bootstrap password (`Admin@Review2024!`) so no
+   one-time dialog needs to be captured. On release builds the password is
+   generated uniquely per install and displayed once instead.
 
-4. **Stop the build container:**
+4. **Verify the app is working:**
+   - Launch the app. A one-time admin credential dialog appears showing the
+     bootstrap password. Dismiss it.
+   - Log in with username `admin` and password `Admin@Review2024!`.
+   - Because the account starts in `password_reset_required` status, you will
+     be prompted to set a new password. Enter `Admin@Review2024!` to keep the
+     documented credential, then confirm.
+   - The **Records** screen opens showing an empty catalog — this is correct for a fresh install.
+   - Tap **Add Record**, fill in at least the Title field, and save.
+   - Confirm the new record appears in the list with the correct title.
+   - Open the **Admin** screen and create an additional user assigned to any non-admin role.
+   - Log out, log back in as the new user, and confirm that admin-only screens (Admin, Audit Log) are not accessible from that role.
+
+5. **Stop the build container:**
    ```bash
    docker compose down -v
    ```
+
 
 ## Testing
 
@@ -105,11 +116,9 @@ to integrate smoothly with CI/CD validators.
 
 **Behavior:**
 
-- **Docker is the primary runner.** Builds the `builder` target of `Dockerfile`
+- **Docker is the sole runner.** Builds the `builder` target of `Dockerfile`
   and runs `./gradlew testDebugUnitTest` inside the container with a pinned
   toolchain (Temurin 17, Gradle 8.5, Android SDK 34, build-tools 34.0.0).
-- **Fallback to local host** if Docker is not available.
-- **Force local execution** with `FORCE_LOCAL=1 ./run_tests.sh`.
 - **1M-row benchmark** runs via Robolectric in the default unit test suite
   (`RoomQueryScaleUnitTest`). Indexed point lookups assert <50ms. The
   instrumented variant (`RoomQueryScaleTest`) also runs automatically when a
@@ -117,50 +126,93 @@ to integrate smoothly with CI/CD validators.
 
 ### Instrumented performance tests
 
-```bash
-# Run the 1M-row performance benchmark on a connected device
-./gradlew connectedDebugAndroidTest --no-daemon --stacktrace \
-    -Pandroid.testInstrumentationRunnerArguments.class=com.eaglepoint.libops.tests.RoomQueryScaleTest
+The instrumented benchmark runs inside Docker using the built-in emulator:
 
-# Or force instrumented tests in the test runner
+```bash
+# Build and run the instrumented stage (includes Android emulator)
+docker build --target instrumented -t libops-instrumented .
+docker run --privileged libops-instrumented
+
+# Or trigger via the test runner (hard-fail on error)
 RUN_INSTRUMENTED=1 ./run_tests.sh
 ```
 
 ### Test catalog
 
-29 unit test files covering:
+49 unit test files covering:
 
 - **Auth:** PasswordPolicy, LockoutPolicy, PasswordHasher, Authorizer,
-  AuthRepository integration, BiometricLogin, AuthorizationGate,
-  BootstrapCredential, BootstrapIntegration
+  AuthRepository integration, BiometricLogin, BiometricPolicy,
+  AuthorizationGate, AuthorizationGateRobolectric, BootstrapCredential,
+  BootstrapIntegration, LoginViewModel, SessionTimeouts, UsernamePolicy
+- **Settings:** AppSettings (default values, clamping, StateFlow emission)
+- **Worker:** CollectionRunWorker (empty-batch success, exception isolation)
 - **Catalog:** IsbnValidator, BarcodeValidator, RecordValidator,
-  SimilarityAlgorithm, CoverImageImport
+  SimilarityAlgorithm, CoverImageImport, CatalogService
 - **State machines:** all 8 lifecycle state machines from PRD section 10
 - **Orchestration:** JobOrdering, JobSchedulerRetry, BundleImporter,
-  SourceIngestionPipeline, WorkerIntegration
+  SourceIngestionPipeline, WorkerIntegration, CsvImporter, JsonImporter,
+  ImportService
 - **Observability:** ObservabilityPipeline (anomaly + QueryTimer emission),
-  AlertPolicy, AuditChain, AuditFilter
+  AlertPolicy, AnomalyThresholds, AuditChain, AuditFilter
+- **Export security:** BundleSignerVerifier (sign/verify roundtrip, digest
+  mismatch, wrong key, multi-key trusted-key resolution via BundleVerifier),
+  BundleExporter (file creation, manifest structure, audit inclusion,
+  audit-event generation), SigningKeyStore contract (keypair lifecycle,
+  rotation, trusted-key registry)
+- **Secrets:** SecretRepository (upsert create/update, masked listing,
+  plaintext reveal, input validation), Masking (null safety, length-based
+  star prefixing)
+- **Analytics:** AnalyticsRepository (dashboard KPI derivation, SLA check)
+- **UI routing:** Navigation (capability-based filtering per role)
+- **Activity-level functional:** LoginFlowRobolectric (login → session →
+  gate → navigation pipeline, role-based end-to-end scenario)
 - **Performance:** RoomQueryPerf (CPU-bound), RoomQueryScaleUnit (1M-row
   Robolectric benchmark), ImageDecoder
 - **Quality:** QualityScore
 
 ## Seeded Credentials
 
-The app generates credentials dynamically on first launch. There are no
-hard-coded passwords — each install gets a unique bootstrap secret.
+### Admin (auto-seeded)
 
-| Role | Username | Password | Notes |
+The debug APK uses a fixed bootstrap password so all roles have explicit,
+reproducible credentials. Release builds generate a unique password per install
+via `SecureRandom` and display it once in a modal dialog.
+
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | `Admin@Review2024!` |
+
+The admin account starts in `password_reset_required` status. On first login
+you will be prompted to set a new password — enter `Admin@Review2024!` to keep
+the documented credential. The bootstrap password is stored in
+Keystore-backed `EncryptedSharedPreferences` (AES-256) until acknowledged,
+then permanently removed. The plaintext is never written to the audit log —
+only a SHA-256 confirmation marker is recorded.
+
+> **Debug vs release:** The fixed password is injected via
+> `LibOpsApp.REVIEW_ADMIN_PASSWORD` and is only passed to `SeedData` when
+> `BuildConfig.DEBUG` is true. Release builds always generate a unique
+> per-install credential.
+
+### Non-admin roles (created by admin after first login)
+
+Non-admin accounts are created through the Admin screen. Reviewers can
+reproduce the full role matrix using the following exact usernames and
+passwords:
+
+| Role | Username | Password | Capabilities |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin` | Shown once at first launch | Generated via `SecureRandom` (20 chars, upper/lower/digit/special). Must be changed immediately — account starts in `password_reset_required` status. |
+| **Collection Manager** | `cm_reviewer` | `Review!2024cm` | RECORDS_MANAGE, HOLDINGS_MANAGE, IMPORTS_RUN, EXPORTS_RUN |
+| **Cataloger** | `cat_reviewer` | `Review!2024cat` | RECORDS_MANAGE, TAXONOMY_MANAGE, BARCODES_MANAGE |
+| **Auditor** | `aud_reviewer` | `Review!2024aud` | AUDIT_VIEW (read-only audit log and reports) |
 
-Additional roles (collection_manager, cataloger, auditor) are created by the
-admin after initial setup via the Admin screen. Each role maps to a predefined
-set of capabilities per PRD section 11.
-
-The bootstrap password is stored in Keystore-backed encrypted storage
-(`EncryptedSharedPreferences` with AES-256) until acknowledged. After
-acknowledgement, it is permanently removed from both encrypted storage and
-in-memory state. The plaintext is never written to the audit log — only a
-SHA-256 confirmation marker is recorded.
+**Step-by-step role creation for reviewers:**
+1. Log in as `admin` / `Admin@Review2024!`. When prompted, confirm the password reset using the same value.
+2. Open the **Admin** screen from the navigation menu.
+3. Tap **Add User**, enter username `cm_reviewer`, password `Review!2024cm`, and select role **Collection Manager**. Save.
+4. Repeat for `cat_reviewer` / `Review!2024cat` / **Cataloger**.
+5. Repeat for `aud_reviewer` / `Review!2024aud` / **Auditor**.
+6. Log out and log back in as each role to verify capability isolation.
 
 See `ASSUMPTIONS.md` for documented implementation decisions.

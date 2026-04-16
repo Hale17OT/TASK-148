@@ -14,9 +14,9 @@ import javax.crypto.spec.GCMParameterSpec
  * Keys never leave the secure hardware where available. We use
  * AES/GCM/NoPadding with a 128-bit authentication tag and 12-byte IV.
  */
-class SecretCipher(private val keyAlias: String = DEFAULT_ALIAS) {
+open class SecretCipher(private val keyAlias: String = DEFAULT_ALIAS) {
 
-    fun encrypt(plaintext: String): Ciphertext {
+    open fun encrypt(plaintext: String): Ciphertext {
         val key = getOrCreateKey()
         val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, key) }
         val iv = cipher.iv
@@ -24,7 +24,7 @@ class SecretCipher(private val keyAlias: String = DEFAULT_ALIAS) {
         return Ciphertext(body.encodeBase64(), iv.encodeBase64())
     }
 
-    fun decrypt(ciphertextBase64: String, ivBase64: String): String {
+    open fun decrypt(ciphertextBase64: String, ivBase64: String): String {
         val key = getOrCreateKey()
         val iv = ivBase64.decodeBase64()
         val cipher = Cipher.getInstance(TRANSFORMATION).apply {

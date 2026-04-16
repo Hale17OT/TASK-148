@@ -14,7 +14,7 @@
 
 
 
-**Solution:** Use Android Keystore-backed AES key material to wrap/unwrap a randomly generated app secret key. Store wrapped key metadata in local preferences, and store encrypted payload + IV in Room (`secrets`). Add key-versioned ciphertext format and a background rekey job for rotation.
+**Solution:** Rely on the platform's hardware-backed key store as the root of trust. Secrets should be encrypted under a locally generated key that is itself stored only in protected hardware, never in plaintext. Each encrypted value should carry enough metadata to identify the key version used, so that rotation can re-encrypt existing values without data loss.
 
 
 
@@ -30,7 +30,7 @@
 
 
 
-**Solution:** Enforce regex-level checks in shared auth policy (`PasswordPolicy`) and mirror the same checks at UI validation and repository write paths so import/admin resets cannot bypass rules.
+**Solution:** Define a single, authoritative password policy that covers both length and character class requirements. All entry points that set or reset passwords — including imports and admin flows — must apply the same policy so that there is no way to introduce a non-compliant credential through a side channel.
 
 
 
@@ -46,7 +46,7 @@
 
 
 
-**Solution:** Keep `failedAttempts` and `lockoutUntil` fields. On successful password verification, zero attempts and clear lockout. On expiry, allow retry but only clear lockout timestamp; preserve attempts for reporting until success.
+**Solution:** Treat the lockout timer and the failure counter as independent concerns. Expiry should lift the access block but leave the counter readable for audit purposes. Only a confirmed successful authentication should clear the counter, so that a pattern of near-misses followed by wait cycles remains visible in the record.
 
 
 
@@ -62,7 +62,7 @@
 
 
 
-**Solution:** Persist last-password-login and last-password-change timestamps, and evaluate biometric policy against invalidation timestamps before allowing biometric session resume.
+**Solution:** Biometric eligibility should be evaluated dynamically at each unlock attempt against a set of invalidation signals rather than being a static flag set at enrolment. Any security-relevant change to the account or policy should cause the next biometric attempt to fall back to full credential verification.
 
 
 
@@ -78,7 +78,7 @@
 
 
 
-**Solution:** Persist `activeRoleId` in session row; default to assigned primary role or most restrictive configured default. Add explicit role-switch action requiring revalidation and audit event.
+**Solution:** A session should operate under exactly one role at a time. The system should establish a default selection rule (such as most restrictive, or explicitly designated primary role) and permit a deliberate mid-session switch that is separately audited, so that every action can be attributed to a single, identifiable role context.
 
 
 
@@ -94,7 +94,7 @@
 
 
 
-**Solution:** Store cron + timezone ID per source (`scheduleCron`, `timezoneId`). On timezone change, log audit event and recompute next execution times.
+**Solution:** A schedule should be stored together with the timezone it was authored in, not just the device's current offset, so that its intended firing time is unambiguous if the device locale changes. Any such locale change should be recorded so that operators can reason about runs that may have shifted.
 
 
 
@@ -110,7 +110,7 @@
 
 
 
-**Solution:** Add provenance flags and last-seen markers for source-owned fields. In full refresh, soft-archive missing source-owned records; do not overwrite manually curated fields unless explicitly mapped.
+**Solution:** Each field in a record should carry a notion of ownership — whether it comes authoritatively from a source or was curated manually. A full refresh should only reconcile source-owned fields; any manually curated field should be treated as out-of-scope for source-driven updates. Records absent from a full refresh payload should be soft-retired rather than deleted outright, preserving history.
 
 
 
@@ -126,7 +126,7 @@
 
 
 
-**Solution:** Use deterministic title normalization plus a documented similarity algorithm (e.g., Jaro-Winkler). Store algorithm version and score in duplicate candidate rows for explainability.
+**Solution:** Title comparison should apply a deterministic, documented normalization step before any similarity scoring, so that two representations of the same title produce the same canonical form regardless of punctuation or casing. The choice of similarity algorithm and the normalization rules should be versioned together so that results are reproducible and auditable.
 
 
 
@@ -142,7 +142,7 @@
 
 
 
-**Solution:** Merge UI should display per-field left/right selection + "manual edit" option; persist full merge decision JSON and rationale in `merge_decisions`.
+**Solution:** The system should not silently resolve field-level conflicts with a hidden rule. Each field disagreement should be surfaced individually, and the operator's resolution choice — including any manual override — should be recorded as part of the merge audit, making the rationale for the final value traceable.
 
 
 
@@ -158,7 +158,7 @@
 
 
 
-**Solution:** Validate graph updates for cycle detection before commit; enforce assignment constraints on archived nodes; keep historical links immutable unless explicit migration tool is used.
+**Solution:** Any modification to the taxonomy graph should be validated for structural integrity — specifically the absence of cycles — before being committed. Archiving a node should disable it for future use while leaving it resolvable for records that were already assigned to it, ensuring historical classification remains meaningful.
 
 
 
@@ -174,7 +174,7 @@
 
 
 
-**Solution:** Define barcode state machine with allowed transitions and reasons; enforce in domain layer and audit every transition with actor/time.
+**Solution:** Barcodes should follow a formally defined lifecycle with a limited set of states and explicit rules about which transitions are legal and under what conditions. Every state change should be logged with the actor and reason, providing a traceable history of each barcode's provenance.
 
 
 
@@ -190,7 +190,7 @@
 
 
 
-**Solution:** Compute `metric_snapshots` on schedule and on-demand refresh with explicit grain, org scope, and capture timestamp; retain immutable snapshots for auditability.
+**Solution:** Metrics should be derived from immutable event records at a defined granularity and stored as discrete snapshots, not computed on-the-fly from live tables. This makes historical values reproducible and insulates dashboards from data changes that occur after the snapshot was taken.
 
 
 
@@ -206,7 +206,7 @@
 
 
 
-**Solution:** Store scoring policy config (weights, windows, caps) and compute score snapshots with full factor breakdown persisted for drill-down explanations.
+**Solution:** The scoring formula should be driven by a policy definition that is separate from the computation logic and is itself versioned and audited. Each computed score should retain a breakdown of the contributing factors so that any score can be explained without re-running historical calculations.
 
 
 
@@ -222,7 +222,7 @@
 
 
 
-**Solution:** Persist `dueAt` at alert creation, enforce note-required resolution, and on reopen either retain original due date or set policy-driven new due date with reason code.
+**Solution:** The SLA due date should be fixed at the moment the alert is created and should not silently shift based on when it is first viewed. Reopening an alert is a distinct lifecycle event with auditable intent; any change to the due date as a consequence should be governed by policy and recorded explicitly.
 
 
 
@@ -238,7 +238,7 @@
 
 
 
-**Solution:** Configure retention by class: immutable audit events retained longest; high-volume perf/exception samples use rolling windows and compaction jobs with admin-configurable thresholds.
+**Solution:** Log records should be classified by criticality, and each class should have an independently configurable retention window. High-volume diagnostic data should age out on a rolling basis, while audit-critical events should be protected from routine compaction and held for a longer, defined period.
 
 
 
@@ -254,7 +254,7 @@
 
 
 
-**Solution:** Define benchmark suite with fixed schema/data shape/indexes and reference device matrix. Report median/p95 with warm/cold cache notes in local test artifacts.
+**Solution:** Performance targets are only meaningful relative to a specified environment. A reference device profile and a repeatable, scripted benchmark suite should be defined so that the < 50 ms target can be objectively verified and so that regressions can be detected across development iterations.
 
 
 
@@ -270,7 +270,7 @@
 
 
 
-**Solution:** Add trusted-key registry (fingerprint, source, createdAt, revokedAt). Bundle verification accepts only active trusted keys; key add/revoke actions are permission-gated and audited.
+**Solution:** The system should maintain an explicit registry of trusted verification keys, managed by administrators through a permission-gated process. Adding or revoking a trusted key should require deliberate confirmation and should produce an audit record. Bundle verification should only succeed against keys that are currently in good standing within that registry.
 
 
 
@@ -286,4 +286,4 @@
 
 
 
-**Solution:** Store bundle/file checksum and reject duplicates as `already_imported` unless user has elevated capability and provides an override reason logged in audit trail.
+**Solution:** The default behavior for reimporting an already-processed file should be to detect and reject the duplicate rather than silently reprocess it. Intentional reprocessing should require an elevated permission and an explicit reason, both of which are recorded, so that the audit trail can distinguish accidental from deliberate re-imports.

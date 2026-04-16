@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
  * - Creates persisted UserSessionEntity and caches it in SessionStore
  * - Writes audit events for success/failure/lockout
  */
-class AuthRepository(
+open class AuthRepository(
     private val userDao: UserDao,
     private val permissionDao: PermissionDao,
     private val sessionDao: SessionDao,
@@ -37,7 +37,7 @@ class AuthRepository(
 
     private val queryTimer: QueryTimer? = observability?.let { QueryTimer(it) }
 
-    suspend fun login(rawUsername: String, password: CharArray): AppResult<SessionStore.ActiveSession> =
+    open suspend fun login(rawUsername: String, password: CharArray): AppResult<SessionStore.ActiveSession> =
         withContext(Dispatchers.IO) {
             val username = rawUsername.trim().lowercase()
             if (username.isEmpty() || password.isEmpty()) {
@@ -258,7 +258,7 @@ class AuthRepository(
      * The caller MUST have already completed BiometricPrompt successfully
      * and must pass the username that was presented for biometric unlock.
      */
-    suspend fun resumeViaBiometric(rawUsername: String): AppResult<SessionStore.ActiveSession> =
+    open suspend fun resumeViaBiometric(rawUsername: String): AppResult<SessionStore.ActiveSession> =
         withContext(Dispatchers.IO) {
             val username = rawUsername.trim().lowercase()
             val user = (queryTimer?.let { it.timed("query", "userDao.findByUsername") { userDao.findByUsername(username) } } ?: userDao.findByUsername(username))

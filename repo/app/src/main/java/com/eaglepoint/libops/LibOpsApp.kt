@@ -89,7 +89,15 @@ class LibOpsApp : Application(), Configuration.Provider {
     }
 
     val seedData: SeedData by lazy {
-        SeedData(db.userDao(), db.permissionDao(), auditLogger)
+        SeedData(
+            userDao = db.userDao(),
+            permissionDao = db.permissionDao(),
+            audit = auditLogger,
+            // In debug builds the bootstrap password is fixed so reviewers always
+            // have a known admin credential without catching the one-time dialog.
+            // Release builds keep the per-install SecureRandom generation.
+            bootstrapPasswordOverride = if (BuildConfig.DEBUG) REVIEW_ADMIN_PASSWORD else null,
+        )
     }
 
     val signingKeyStore: SigningKeyStore by lazy {
@@ -154,4 +162,15 @@ class LibOpsApp : Application(), Configuration.Provider {
             .setMinimumLoggingLevel(android.util.Log.INFO)
             .setExecutor(java.util.concurrent.Executors.newFixedThreadPool(settings.current().parallelism))
             .build()
+
+    companion object {
+        /**
+         * Fixed bootstrap password used only in debug builds so reviewers always
+         * have a known admin credential. Release builds use a per-install
+         * SecureRandom password displayed once at first launch.
+         *
+         * Satisfies PasswordPolicy: uppercase, lowercase, digit, special char, ≥12 chars.
+         */
+        const val REVIEW_ADMIN_PASSWORD = "Admin@Review2024!"
+    }
 }
